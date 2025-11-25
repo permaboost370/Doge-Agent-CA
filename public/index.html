@@ -2,18 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>DogeOS CA Intel Console</title>
+  <title>muchdogeagent Intel Agent</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
       --bg-main: #000000;
-      --card-bg: #05070d;
-      --accent-primary: #22c55e;
-      --accent-secondary: #38bdf8;
-      --accent-danger: #f97373;
-      --accent-warn: #facc15;
+      --card-bg: #050505;
+      --accent-green: #00ff00;
       --border-soft: #1f2933;
-      --text-muted: #9ca3af;
+      --text-muted: #cccccc;
     }
 
     * {
@@ -24,7 +21,7 @@
       margin: 0;
       padding: 24px;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #111827 0, #000000 45%, #000000 100%);
+      background: #000000;
       color: #ffffff;
     }
 
@@ -33,8 +30,8 @@
       margin: 0 auto;
       border-radius: 18px;
       padding: 1px;
-      background: linear-gradient(135deg, #22c55e33, #38bdf833, #6366f133);
-      box-shadow: 0 0 40px rgba(56, 189, 248, 0.35);
+      background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 255, 0, 0.15));
+      box-shadow: 0 0 40px rgba(0, 255, 0, 0.35);
     }
 
     .console {
@@ -48,28 +45,19 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 18px;
+      gap: 10px;
     }
 
     .header-left h1 {
       font-size: 1.3rem;
       margin: 0;
+      color: #ffffff;
     }
 
     .header-left p {
       margin: 4px 0 0;
       font-size: 0.8rem;
       color: var(--text-muted);
-    }
-
-    .badge {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid #22c55e88;
-      color: #bbf7d0;
-      background: radial-gradient(circle at top, #064e3b 0, #022c22 40%, #000 90%);
     }
 
     .grid {
@@ -101,15 +89,15 @@
     }
 
     .panel-title span {
-      color: var(--accent-secondary);
+      color: var(--accent-green);
     }
 
     textarea {
       width: 100%;
       border-radius: 10px;
-      border: 1px solid #4b5563;
-      background: #020617;
-      color: #f9fafb;
+      border: 1px solid #444444;
+      background: #020202;
+      color: #ffffff;
       padding: 10px;
       min-height: 68px;
       resize: vertical;
@@ -118,7 +106,7 @@
     }
 
     textarea::placeholder {
-      color: #6b7280;
+      color: #666666;
     }
 
     .controls {
@@ -144,9 +132,9 @@
       padding: 8px 16px;
       font-size: 0.85rem;
       font-weight: 600;
-      color: #000;
-      background: linear-gradient(135deg, #22c55e, #a3e635);
-      box-shadow: 0 0 18px rgba(34, 197, 94, 0.55);
+      color: #000000;
+      background: var(--accent-green);
+      box-shadow: 0 0 18px rgba(0, 255, 0, 0.6);
     }
 
     button:disabled {
@@ -160,7 +148,7 @@
       font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
         Consolas, "Liberation Mono", "Courier New", monospace;
       font-size: 0.8rem;
-      color: #e5e7eb;
+      color: #ffffff;
       max-height: 340px;
       overflow: auto;
       padding-right: 4px;
@@ -171,7 +159,7 @@
     }
 
     .intel-output::-webkit-scrollbar-thumb {
-      background: #374151;
+      background: #333333;
       border-radius: 4px;
     }
 
@@ -180,6 +168,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 6px;
+      gap: 8px;
     }
 
     .risk-level-pill {
@@ -187,28 +176,10 @@
       text-transform: uppercase;
       padding: 3px 10px;
       border-radius: 999px;
-      border: 1px solid #4b5563;
-    }
-
-    .risk-low {
-      border-color: #22c55e;
-      color: #bbf7d0;
-      background: #022c22;
-    }
-    .risk-medium {
-      border-color: #facc15;
-      color: #fef9c3;
-      background: #422006;
-    }
-    .risk-high {
-      border-color: #f97373;
-      color: #fee2e2;
-      background: #450a0a;
-    }
-    .risk-unknown {
-      border-color: #6b7280;
-      color: #e5e7eb;
-      background: #020617;
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+      background: #000000;
+      white-space: nowrap;
     }
 
     .risk-body {
@@ -216,7 +187,7 @@
       font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
         Consolas, "Liberation Mono", "Courier New", monospace;
       font-size: 0.8rem;
-      color: #e5e7eb;
+      color: #ffffff;
       max-height: 340px;
       overflow: auto;
       padding-right: 4px;
@@ -227,7 +198,7 @@
     }
 
     .risk-body::-webkit-scrollbar-thumb {
-      background: #374151;
+      background: #333333;
       border-radius: 4px;
     }
   </style>
@@ -237,11 +208,8 @@
     <div class="console">
       <div class="header">
         <div class="header-left">
-          <h1>DogeOS CA Intel Console</h1>
-          <p>Paste a token contract. Agent scans on-chain data and returns AI risk brief.</p>
-        </div>
-        <div class="header-right">
-          <span class="badge">DOGEOS AGENT · CA ONLY · NO FINANCIAL ADVICE</span>
+          <h1>muchdogeagent Intel Agent</h1>
+          <p>Paste a token contract ending in doge or DUB. Agent scans on-chain data and returns AI risk brief.</p>
         </div>
       </div>
 
@@ -255,13 +223,13 @@
           <div class="hint">
             Only contract addresses that look valid and end with <strong>doge</strong> or <strong>DUB</strong> are accepted.
           </div>
-          <button id="scan-btn">Run DogeOS Scan</button>
+          <button id="scan-btn">Run muchdogeagent scan</button>
         </div>
       </div>
 
       <div class="grid">
         <div class="panel">
-          <div class="panel-title"><span>Module 1</span> · On-Chain Intel</div>
+          <div class="panel-title"><span>Module 1</span> · On-chain Intel</div>
           <div id="intel-output" class="intel-output" style="display:none;"></div>
         </div>
 
@@ -269,9 +237,9 @@
           <div class="panel-title"><span>Module 2</span> · AI Risk Brief</div>
           <div class="risk-header">
             <span style="font-size:0.8rem; color:var(--text-muted);">
-              Honeypot / scam risk evaluation
+              Honeypot / scam risk evaluation (read-only intel)
             </span>
-            <span id="risk-pill" class="risk-level-pill risk-unknown">risk: unknown</span>
+            <span id="risk-pill" class="risk-level-pill">risk: unknown</span>
           </div>
           <div id="risk-output" class="risk-body" style="display:none;"></div>
         </div>
@@ -288,20 +256,14 @@
 
     function setRiskPill(level) {
       const lvl = (level || "unknown").toLowerCase();
-      riskPill.className = "risk-level-pill";
       let label = "risk: unknown";
 
       if (lvl.includes("low")) {
-        riskPill.classList.add("risk-low");
         label = "risk: low";
       } else if (lvl.includes("medium")) {
-        riskPill.classList.add("risk-medium");
         label = "risk: medium";
       } else if (lvl.includes("high")) {
-        riskPill.classList.add("risk-high");
         label = "risk: high";
-      } else {
-        riskPill.classList.add("risk-unknown");
       }
 
       riskPill.textContent = label;
@@ -322,13 +284,13 @@
       const input = inputField.value.trim();
       if (!input) {
         showIntel("No input provided. Paste a contract address first.");
-        showRisk("No input provided. Nothing to analyze.", "unknown");
+        showRisk("No input provided. Nothing to analyze.\n\nIntel only. No financial advice.", "unknown");
         return;
       }
 
       scanBtn.disabled = true;
       showIntel("Running on-chain fetch via Dexscreener...");
-      showRisk("Requesting AI risk brief from DogeOS core...", "unknown");
+      showRisk("Requesting AI risk brief from muchdogeagent core...", "unknown");
 
       try {
         const resp = await fetch("/api/analyze-anoncoin", {
