@@ -86,7 +86,7 @@ Hard rules:
 - Focus ONLY on risk, safety, and clear red flags in the data.
 - Missing or null data (holders, socials, description, website, volume, etc.) MUST NOT be treated as a red flag.
 - If data is missing, list it under "Data limitations" instead of "Key red flags".
-- Do NOT assume a domain is suspicious just because of its name (for example, never call "anoncoin.it" suspicious purely based on the string).
+- Do NOT assume a domain is suspicious just because of its name (for example, never call a domain suspicious purely based on the string).
 - Do NOT say things like "no Telegram", "no social media", "no description" as red flags if the field is just not provided in the input.
 
 Output format (exactly in this order):
@@ -125,6 +125,7 @@ Keep slightly Doge-flavored tone but readable and professional.
     holders: data.holders,
     primaryWebsite: data.primaryWebsite,
     telegram: data.telegram,
+    xUrl: data.xUrl,
     description: data.description
   };
 
@@ -151,6 +152,28 @@ Keep slightly Doge-flavored tone but readable and professional.
   }
 
   return { riskLevel, text };
+}
+
+// ---------- Helper: build clean URLs for socials ----------
+
+function buildTelegramUrl(socialObj) {
+  if (!socialObj) return null;
+  if (socialObj.url) return socialObj.url;
+  if (!socialObj.handle) return null;
+  const handle = socialObj.handle.startsWith("@")
+    ? socialObj.handle.slice(1)
+    : socialObj.handle;
+  return `https://t.me/${handle}`;
+}
+
+function buildXUrl(socialObj) {
+  if (!socialObj) return null;
+  if (socialObj.url) return socialObj.url;
+  if (!socialObj.handle) return null;
+  const handle = socialObj.handle.startsWith("@")
+    ? socialObj.handle.slice(1)
+    : socialObj.handle;
+  return `https://x.com/${handle}`;
 }
 
 // ---------- Main API: analyze contract address ----------
@@ -205,14 +228,29 @@ app.post("/api/analyze-anoncoin", async (req, res) => {
     const liquidityUsd = bestPair.liquidity?.usd || null;
     const fdv = bestPair.fdv || null;
     const marketCap = bestPair.marketCap || null;
-    const websites = bestPair.info?.websites || [];
-    const socials = bestPair.info?.socials || [];
-    const dexscreenerUrl = bestPair.url;
+    const websites = bestPair.info?.websites || []; // [{url,label}]
+    const socials = bestPair.info?.socials || [];   // [{platform,handle,url}]
+    const dexscreenerUrl = bestPair.url || null;
 
-    let telegram = socials.find((s) =>
-      (s.platform || "").toLowerCase().includes("telegram")
-    );
-    telegram = telegram?.handle || telegram?.url || null;
+    // Website: use first url if present
+    const primaryWebsite = websites.find((w) => w?.url)?.url || null;
+
+    // Socials: Telegram + X/Twitter
+    let telegramSocial = null;
+    let xSocial = null;
+
+    for (const s of socials) {
+      if (!s || !s.platform) continue;
+      const plat = s.platform.toLowerCase();
+      if (!telegramSocial && plat.includes("telegram")) {
+        telegramSocial = s;
+      } else if (!xSocial && (plat.includes("twitter") || plat.includes("x"))) {
+        xSocial = s;
+      }
+    }
+
+    const telegramUrl = buildTelegramUrl(telegramSocial);
+    const xUrl = buildXUrl(xSocial);
 
     // -------- Holders (Solana only) --------
     let holders = null;
@@ -230,7 +268,6 @@ app.post("/api/analyze-anoncoin", async (req, res) => {
       }
     }
 
-    const primaryWebsite = websites.find((w) => w.url)?.url || "No website";
     const description = null; // no launchpad description now
 
     // -------- muchdogeagent Intel Summary (on-chain only) --------
@@ -252,8 +289,9 @@ app.post("/api/analyze-anoncoin", async (req, res) => {
       `- Holders: ${holders || "?"}`,
       ``,
       `Links:`,
-      `- Website: ${primaryWebsite}`,
-      `- Telegram: ${telegram || "not listed"}`,
+      `- Website: ${primaryWebsite || "not provided"}`,
+      `- Telegram: ${telegramUrl || "not provided"}`,
+      `- X (Twitter): ${xUrl || "not provided"}`,
       `- Dexscreener: ${dexscreenerUrl || "not provided"}`,
       ``,
       `Note: Only contract addresses ending in 'doge' or 'DUB' are scanned by this console.`
@@ -279,7 +317,8 @@ app.post("/api/analyze-anoncoin", async (req, res) => {
         fdv,
         holders,
         primaryWebsite,
-        telegram,
+        telegram: telegramUrl,
+        xUrl,
         description
       };
 
@@ -294,7 +333,13 @@ app.post("/api/analyze-anoncoin", async (req, res) => {
       ok: true,
       summary,
       aiRisk: aiRiskText,
-      aiRiskLevel: aiRiskLevel
+      aiRiskLevel: aiRiskLevel,
+      links: {
+        website: primaryWebsite,
+        telegram: telegramUrl,
+        x: xUrl,
+        dexscreener: dexscreenerUrl
+      }
     });
   } catch (err) {
     console.error("Error:", err);
