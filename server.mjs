@@ -76,27 +76,40 @@ async function generateRiskAnalysis(data) {
   }
 
   const systemPrompt = `
-You are DogeOS Agent, a meme-powered cyber-intel dog specialized in token risk analysis.
-Your task: evaluate potential scam / honeypot risk for a token based ONLY on provided data.
+You are muchdogeagent, a meme-powered cyber-intel dog specialized in token risk analysis.
+Your task: evaluate potential scam / honeypot risk for a token based ONLY on the provided data.
 
-Rules:
+Hard rules:
 - You MUST NOT give financial advice.
 - Do NOT recommend buying, selling, holding, or profiting.
 - Do NOT mention price targets or gains.
-- Focus ONLY on risk, safety, and red flags.
-- Be concise but clear.
-- Always end with a caution line like "Intel only, no financial advice."
+- Focus ONLY on risk, safety, and clear red flags in the data.
+- Missing or null data (holders, socials, description, website, volume, etc.) MUST NOT be treated as a red flag.
+- If data is missing, list it under "Data limitations" instead of "Key red flags".
+- Do NOT assume a domain is suspicious just because of its name (for example, never call "anoncoin.it" suspicious purely based on the string).
+- Do NOT say things like "no Telegram", "no social media", "no description" as red flags if the field is just not provided in the input.
 
-Output format (exactly):
+Output format (exactly in this order):
+
 RISK_LEVEL: Low | Medium | High | Unknown
 
-Then a blank line, then:
-- Key red flags (bullet list)
-- Positive signals (bullet list, if any)
-- Honeypot likelihood (qualitative only, never 100%)
-- Final caution note.
+(blank line)
+Key red flags:
+- ... (if none, write: - None clearly identifiable from available data.)
 
-Keep slightly Doge-flavored tone but readable.
+Positive signals:
+- ... (if none, write: - None clearly identifiable from available data.)
+
+Data limitations:
+- ... (list any fields that are null/unknown, such as holders, socials, website, description, volume, etc.)
+
+Honeypot likelihood:
+- Short qualitative statement only (for example: "Not enough data to say", or "Some risk indicators present, but inconclusive").
+
+Final caution note:
+- One line reminding this is intel only, no financial advice.
+
+Keep slightly Doge-flavored tone but readable and professional.
 `.trim();
 
   const userPayload = {
@@ -122,7 +135,7 @@ Keep slightly Doge-flavored tone but readable.
   const resp = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
     temperature: 0.4,
-    max_tokens: 500,
+    max_tokens: 600,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userMessage }
@@ -220,9 +233,9 @@ app.post("/api/analyze-anoncoin", async (req, res) => {
     const primaryWebsite = websites.find((w) => w.url)?.url || "No website";
     const description = null; // no launchpad description now
 
-    // -------- DogeOS Intel Summary (on-chain only) --------
+    // -------- muchdogeagent Intel Summary (on-chain only) --------
     const summary = [
-      `=== DogeOS CA Intel ===`,
+      `=== muchdogeagent CA Intel ===`,
       `Contract: ${tokenAddress}`,
       `Detected chain: ${chainId}`,
       ``,
@@ -251,7 +264,7 @@ app.post("/api/analyze-anoncoin", async (req, res) => {
     // -------- AI Risk Brief --------
     let aiRiskLevel = "unknown";
     let aiRiskText =
-      "AI risk analysis unavailable. Configure OPENAI_API_KEY on the server to enable DogeOS risk brief.";
+      "AI risk analysis unavailable. Configure OPENAI_API_KEY on the server to enable muchdogeagent risk brief.";
 
     try {
       const riskInput = {
