@@ -147,6 +147,11 @@
       font-size: 0.8rem;
       color: var(--text-muted);
       margin-bottom: 8px;
+      min-height: 1.2em;
+    }
+
+    .link-bar strong {
+      color: #ffffff;
     }
 
     .link-bar a {
@@ -245,7 +250,9 @@
       <div class="grid">
         <div class="panel">
           <div class="panel-title"><span>Module 1</span> · On-chain Intel</div>
-          <div id="link-bar" class="link-bar" style="display:none;"></div>
+          <div id="link-bar" class="link-bar">
+            <strong>Links:</strong> none available yet.
+          </div>
           <div id="intel-output" class="intel-output" style="display:none;"></div>
         </div>
 
@@ -275,13 +282,9 @@
       const lvl = (level || "unknown").toLowerCase();
       let label = "risk: unknown";
 
-      if (lvl.includes("low")) {
-        label = "risk: low";
-      } else if (lvl.includes("medium")) {
-        label = "risk: medium";
-      } else if (lvl.includes("high")) {
-        label = "risk: high";
-      }
+      if (lvl.includes("low")) label = "risk: low";
+      else if (lvl.includes("medium")) label = "risk: medium";
+      else if (lvl.includes("high")) label = "risk: high";
 
       riskPill.textContent = label;
     }
@@ -299,33 +302,34 @@
 
     function showLinks(links) {
       linkBar.innerHTML = "";
-      const parts = [];
+      const prefix = document.createElement("strong");
+      prefix.textContent = "Links: ";
+      linkBar.appendChild(prefix);
 
-      function addLink(label, url) {
+      const addLink = (label, url) => {
         if (!url) return;
+        const sep = document.createElement("span");
+        sep.textContent = " ";
+        linkBar.appendChild(sep);
+
         const a = document.createElement("a");
-        try {
-          a.href = url;
-        } catch {
-          return;
-        }
+        a.href = url;
         a.target = "_blank";
         a.rel = "noopener noreferrer";
         a.textContent = label;
-        if (linkBar.childNodes.length > 0) {
-          const sep = document.createElement("span");
-          sep.textContent = " | ";
-          linkBar.appendChild(sep);
-        }
         linkBar.appendChild(a);
+      };
+
+      if (links && (links.website || links.telegram || links.x || links.dexscreener)) {
+        addLink("[Website]", links.website);
+        addLink("[Telegram]", links.telegram);
+        addLink("[X]", links.x);
+        addLink("[Dexscreener]", links.dexscreener);
+      } else {
+        const span = document.createElement("span");
+        span.textContent = "none detected in Dexscreener data.";
+        linkBar.appendChild(span);
       }
-
-      if (links?.website) addLink("Website", links.website);
-      if (links?.telegram) addLink("Telegram", links.telegram);
-      if (links?.x) addLink("X (Twitter)", links.x);
-      if (links?.dexscreener) addLink("Dexscreener", links.dexscreener);
-
-      linkBar.style.display = linkBar.childNodes.length ? "block" : "none";
     }
 
     async function runScan() {
