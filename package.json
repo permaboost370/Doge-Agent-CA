@@ -1,0 +1,15 @@
+{
+  "name": "anoncoin-dogeos-scanner",
+  "version": "1.0.0",
+  "description": "DogeOS Agent utility to analyze Anoncoin launchpad tokens.",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
